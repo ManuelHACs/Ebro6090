@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ebro E-6090 · Control de mantenimiento</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+  :root {
+    --verde-oscuro: #1c3a1c;
+    --verde-medio: #2e5a2e;
+    --verde-claro: #85c785;
+    --verde-bg: #f0f7f0;
+    --verde-borde: #c3dfc3;
+    --rojo-bg: #fdf0f0;
+    --rojo-texto: #b91c1c;
+    --rojo-borde: #fca5a5;
+    --rojo-fuerte: #dc2626;
+    --ambar-bg: #fffbeb;
+    --ambar-texto: #92400e;
+    --ambar-borde: #fcd34d;
+    --gris-texto: #374151;
+    --gris-suave: #6b7280;
+    --gris-fondo: #f9fafb;
+    --gris-borde: #e5e7eb;
+    --blanco: #ffffff;
+    --radio: 10px;
+    --fuente: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--fuente);
+    background: #f1f5f1;
+    color: var(--gris-texto);
+    min-height: 100vh;
+    padding: 0 0 2rem;
+  }
+
+  .cabecera {
+    background: var(--verde-oscuro);
+    padding: 1.25rem 1.25rem 1rem;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .cabecera-inner {
+    max-width: 680px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .cab-icono {
+    width: 48px;
+    height: 48px;
+    background: var(--verde-medio);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .cab-icono i { font-size: 24px; color: var(--verde-claro); }
+
+  .cab-titulo { font-size: 18px; font-weight: 600; line-height: 1.2; }
+  .cab-sub { font-size: 12px; color: var(--verde-claro); margin-top: 2px; }
+
+  .cab-pill {
+    margin-left: auto;
+    background: #1e461e;
+    color: var(--verde-claro);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .contenido {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 1rem 1rem 0;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .stat {
+    background: var(--blanco);
+    border: 1px solid var(--gris-borde);
+    border-radius: var(--radio);
+    padding: 12px 14px;
+  }
+
+  .stat-lbl {
+    font-size: 11px;
+    color: var(--gris-suave);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 4px;
+  }
+
+  .stat-val { font-size: 24px; font-weight: 600; color: var(--gris-texto); }
+  .stat-unit { font-size: 12px; color: var(--gris-suave); margin-top: 2px; }
+
+  .alerta-banner {
+    background: var(--rojo-bg);
+    border: 1px solid var(--rojo-borde);
+    border-radius: var(--radio);
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .alerta-banner i { font-size: 18px; color: var(--rojo-fuerte); flex-shrink: 0; margin-top: 1px; }
+  .alerta-banner span { font-size: 13px; color: var(--rojo-texto); font-weight: 500; line-height: 1.4; }
+
+  .seccion-lbl {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gris-suave);
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    margin: 16px 0 6px;
+    padding-left: 2px;
+  }
+
+  .item {
+    background: var(--blanco);
+    border: 1px solid var(--gris-borde);
+    border-left: 4px solid transparent;
+    border-radius: var(--radio);
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    transition: box-shadow .15s;
+  }
+
+  .item:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .item.ok { border-left-color: #16a34a; }
+  .item.warn { border-left-color: #d97706; }
+  .item.danger { border-left-color: var(--rojo-fuerte); background: var(--rojo-bg); }
+
+  .item-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: space-between;
+  }
+
+  .item-izq {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .item-izq i { font-size: 17px; flex-shrink: 0; }
+  .item.ok .item-izq i { color: #16a34a; }
+  .item.warn .item-izq i { color: #d97706; }
+  .item.danger .item-izq i { color: var(--rojo-fuerte); }
+
+  .item-nombre {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gris-texto);
+    line-height: 1.3;
+  }
+
+  .item.danger .item-nombre { color: var(--rojo-texto); }
+
+  .item-der {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .bdg {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .bdg-ok { background: #dcfce7; color: #15803d; }
+  .bdg-warn { background: #fef3c7; color: #92400e; }
+  .bdg-danger { background: #fee2e2; color: var(--rojo-texto); }
+
+  .btn-manual {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #1d4ed8;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 3px 8px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background .12s;
+  }
+
+  .btn-manual:hover { background: #dbeafe; }
+  .btn-manual i { font-size: 12px; }
+
+  .item-detalle {
+    font-size: 11px;
+    color: var(--gris-suave);
+    margin-top: 5px;
+    line-height: 1.5;
+  }
+
+  .item.danger .item-detalle { color: #991b1b; }
+
+  .barra-wrap {
+    height: 4px;
+    background: #f3f4f6;
+    border-radius: 4px;
+    margin-top: 7px;
+    overflow: hidden;
+  }
+
+  .barra { height: 100%; border-radius: 4px; }
+
+  .leyenda {
+    margin-top: 20px;
+    padding: 12px 14px;
+    background: var(--blanco);
+    border: 1px solid var(--gris-borde);
+    border-radius: var(--radio);
+    font-size: 12px;
+    color: var(--gris-suave);
+    line-height: 1.6;
+  }
+
+  .leyenda strong { color: var(--gris-texto); }
+
+  .leyenda-fila {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .pie {
+    max-width: 680px;
+    margin: 16px auto 0;
+    padding: 0 1rem;
+    font-size: 11px;
+    color: var(--gris-suave);
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 420px) {
+    .cab-titulo { font-size: 15px; }
+    .stat-val { font-size: 20px; }
+    .btn-manual { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cabecera">
+  <div class="cabecera-inner">
+    <div class="cab-icono"><i class="ti ti-tractor"></i></div>
+    <div>
+      <div class="cab-titulo">Tractor Ebro E-6090</div>
+      <div class="cab-sub">Control de mantenimiento preventivo · Manual SP-286/2</div>
+    </div>
+    <div class="cab-pill"><i class="ti ti-circle-check" style="font-size:11px"></i>Activo</div>
+  </div>
+</div>
+
+<div class="contenido">
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-lbl">Horómetro actual</div>
+      <div class="stat-val">6.556</div>
+      <div class="stat-unit">horas de trabajo</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Última lectura</div>
+      <div class="stat-val" style="font-size:17px;padding-top:4px">25 may 2025</div>
+      <div class="stat-unit">Registrado en PowerApps</div>
+    </div>
+  </div>
+
+  <div class="alerta-banner">
+    <i class="ti ti-alert-triangle"></i>
+    <span>1 intervención vencida — actuar de inmediato para evitar daños al motor</span>
+  </div>
+
+  <!-- ═══════════════ MOTOR ═══════════════ -->
+  <div class="seccion-lbl">Motor</div>
+
+  <div class="item danger">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-engine"></i>
+        <span class="item-nombre">Cambio de aceite del cárter + filtro de aceite</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-danger">+6 h vencido</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=45" target="_blank">
+          <i class="ti ti-book"></i>Pág. 85
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 150 h · Venció en h 6.550 · Excedido 6 h · Vaciar tapón inferior derecho del cárter con motor caliente</div>
+    <div class="barra-wrap"><div class="barra" style="width:100%;background:#dc2626"></div></div>
+  </div>
+
+  <div class="item warn">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-filter"></i>
+        <span class="item-nombre">Limpieza filtro tubo respiradero del cárter</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-warn">Faltan 44 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=45" target="_blank">
+          <i class="ti ti-book"></i>Pág. 85
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 150 h · Próxima: h 6.600 · Filtro de malla entre cárter y bloque · Limpiar con gasoil y secar con aire a presión</div>
+    <div class="barra-wrap"><div class="barra" style="width:82%;background:#d97706"></div></div>
+  </div>
+
+  <div class="item warn">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-air-conditioning"></i>
+        <span class="item-nombre">Vaciado y limpieza del depurador de aire (cubeta de aceite)</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-warn">Faltan 94 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=46" target="_blank">
+          <i class="ti ti-book"></i>Pág. 86
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 150 h · Próxima: h 6.650 · Cambiar aceite cubeta y limpiar prefiltro de aire</div>
+    <div class="barra-wrap"><div class="barra" style="width:59%;background:#d97706"></div></div>
+  </div>
+
+  <div class="item ok">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-flame"></i>
+        <span class="item-nombre">Cambio elemento filtro de combustible</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-ok">Faltan 294 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=46" target="_blank">
+          <i class="ti ti-book"></i>Pág. 90
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 300 h (Servicio Oficial) · Próxima: h 6.850 · Vaciar y limpiar vaso sedimentos</div>
+    <div class="barra-wrap"><div class="barra" style="width:32%;background:#16a34a"></div></div>
+  </div>
+
+  <div class="item ok">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-tool"></i>
+        <span class="item-nombre">Ajuste holgura de válvulas</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-ok">Faltan 344 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=45" target="_blank">
+          <i class="ti ti-book"></i>Pág. 86
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 900 h (Servicio Oficial) · Próxima: h 6.900</div>
+    <div class="barra-wrap"><div class="barra" style="width:12%;background:#16a34a"></div></div>
+  </div>
+
+  <!-- ═══════════════ REFRIGERACIÓN ═══════════════ -->
+  <div class="seccion-lbl">Sistema de refrigeración</div>
+
+  <div class="item ok">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-droplet"></i>
+        <span class="item-nombre">Nivel de agua del radiador</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-ok">Control 10 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=50" target="_blank">
+          <i class="ti ti-book"></i>Pág. 94
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 10 h · Agua limpia no calcárea hasta el tubo de rebose · Nunca abrir tapón con motor caliente</div>
+    <div class="barra-wrap"><div class="barra" style="width:62%;background:#16a34a"></div></div>
+  </div>
+
+  <div class="item ok">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-wind"></i>
+        <span class="item-nombre">Limpieza exterior panal del radiador</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-ok">Faltan 294 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=50" target="_blank">
+          <i class="ti ti-book"></i>Pág. 94
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 300 h · Próxima: h 6.850 · Chorro de aire a presión desde la parte trasera del radiador</div>
+    <div class="barra-wrap"><div class="barra" style="width:32%;background:#16a34a"></div></div>
+  </div>
+
+  <!-- ═══════════════ ELÉCTRICO ═══════════════ -->
+  <div class="seccion-lbl">Sistema eléctrico</div>
+
+  <div class="item ok">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-battery-charging"></i>
+        <span class="item-nombre">Nivel de electrolito de la batería</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-ok">Faltan 294 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=51" target="_blank">
+          <i class="ti ti-book"></i>Pág. 97
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 300 h · Próxima: h 6.850 · Limpiar tapa y bornes · Fusibles 8 A (8 unidades)</div>
+    <div class="barra-wrap"><div class="barra" style="width:32%;background:#16a34a"></div></div>
+  </div>
+
+  <div class="item ok">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-bolt"></i>
+        <span class="item-nombre">Tensión correa alternador / ventilador</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-ok">Faltan 294 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=51" target="_blank">
+          <i class="ti ti-book"></i>Pág. 98
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 300 h (Servicio Oficial) · Próxima: h 6.850 · El alternador no debe funcionar nunca sin batería conectada</div>
+    <div class="barra-wrap"><div class="barra" style="width:32%;background:#16a34a"></div></div>
+  </div>
+
+  <!-- ═══════════════ EJE DELANTERO Y DIRECCIÓN ═══════════════ -->
+  <div class="seccion-lbl">Eje delantero y dirección</div>
+
+  <div class="item ok">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-arrow-autofit-right"></i>
+        <span class="item-nombre">Nivel aceite circuito de dirección hidrostática</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-ok">Faltan 94 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=51" target="_blank">
+          <i class="ti ti-book"></i>Pág. 98
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 150 h · Próxima: h 6.650 · Capacidad 2,4 l · Aceite STOU 15W40</div>
+    <div class="barra-wrap"><div class="barra" style="width:59%;background:#16a34a"></div></div>
+  </div>
+
+  <div class="item ok">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-steering-wheel"></i>
+        <span class="item-nombre">Cambio aceite y filtro circuito dirección</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-ok">Faltan 294 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=52" target="_blank">
+          <i class="ti ti-book"></i>Pág. 102
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 450 h (Servicio Oficial) · Próxima: h 6.850 · Sangrar el circuito tras el cambio</div>
+    <div class="barra-wrap"><div class="barra" style="width:32%;background:#16a34a"></div></div>
+  </div>
+
+  <!-- ═══════════════ TRANSMISIÓN E HIDRÁULICO ═══════════════ -->
+  <div class="seccion-lbl">Transmisión y sistema hidráulico</div>
+
+  <div class="item ok">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-settings-2"></i>
+        <span class="item-nombre">Nivel aceite transmisión, eje trasero, elevador y frenos</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-ok">Control 10 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=55" target="_blank">
+          <i class="ti ti-book"></i>Pág. 105
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 10 h · Varilla indicadora en tapa del elevador, lado trasero izquierdo · Capacidad 62 l</div>
+    <div class="barra-wrap"><div class="barra" style="width:62%;background:#16a34a"></div></div>
+  </div>
+
+  <div class="item ok">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-rotate-clockwise"></i>
+        <span class="item-nombre">Nivel aceite reducciones epicíclicas finales</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-ok">Faltan 94 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=55" target="_blank">
+          <i class="ti ti-book"></i>Pág. 105
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 150 h · Próxima: h 6.650 · Tapón llenado/vaciado/nivel en cada grupo · Aceite SAE 90EP</div>
+    <div class="barra-wrap"><div class="barra" style="width:59%;background:#16a34a"></div></div>
+  </div>
+
+  <div class="item ok">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-refresh"></i>
+        <span class="item-nombre">Cambio filtro exterior circuito hidráulico</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-ok">Faltan 194 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=56" target="_blank">
+          <i class="ti ti-book"></i>Pág. 106
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 300/450 h · Próxima: h 6.750 · Mann W950/7 · Testigo óptico indica saturación · Llenar con aceite limpio al montar</div>
+    <div class="barra-wrap"><div class="barra" style="width:44%;background:#16a34a"></div></div>
+  </div>
+
+  <div class="item ok">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-oil"></i>
+        <span class="item-nombre">Cambio aceite transmisión, eje trasero, elevador y frenos</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-ok">Faltan 294 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=56" target="_blank">
+          <i class="ti ti-book"></i>Pág. 106
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 450 h · Próxima: h 6.850 · 62 l · Vaciar en caliente · Limpiar malla metálica colector bomba hidráulica</div>
+    <div class="barra-wrap"><div class="barra" style="width:32%;background:#16a34a"></div></div>
+  </div>
+
+  <div class="item ok">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-transfer"></i>
+        <span class="item-nombre">Cambio aceite reducciones epicíclicas finales</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-ok">Faltan 294 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=57" target="_blank">
+          <i class="ti ti-book"></i>Pág. 109
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 450 h · Próxima: h 6.850 · Situar tapón en posición inferior para vaciado, horizontal para llenado</div>
+    <div class="barra-wrap"><div class="barra" style="width:32%;background:#16a34a"></div></div>
+  </div>
+
+  <!-- ═══════════════ EMBRAGUE Y FRENOS ═══════════════ -->
+  <div class="seccion-lbl">Embrague y frenos</div>
+
+  <div class="item warn">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-adjustments-horizontal"></i>
+        <span class="item-nombre">Ajuste recorrido libre pedal del embrague</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-warn">Faltan 44 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=57" target="_blank">
+          <i class="ti ti-book"></i>Pág. 109
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 300 h · Próxima: h 6.600 · Recorrido libre: 21 mm desde la huella del pedal · Ajustar horquilla y contratuerca</div>
+    <div class="barra-wrap"><div class="barra" style="width:82%;background:#d97706"></div></div>
+  </div>
+
+  <div class="item warn">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-brake"></i>
+        <span class="item-nombre">Comprobación frenos de servicio</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-warn">Faltan 44 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=57" target="_blank">
+          <i class="ti ti-book"></i>Pág. 109
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 300 h · Próxima: h 6.600 · Comprobar actuación simultánea en ambas ruedas traseras · Ajustar tornillos de ajuste en la trompeta</div>
+    <div class="barra-wrap"><div class="barra" style="width:82%;background:#d97706"></div></div>
+  </div>
+
+  <div class="item warn">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-parking"></i>
+        <span class="item-nombre">Comprobación freno de estacionamiento / emergencia</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-warn">Faltan 44 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=58" target="_blank">
+          <i class="ti ti-book"></i>Pág. 110
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 300 h · Próxima: h 6.600 · Actúa sobre ambas ruedas traseras · Ajustar barra de ajuste con palanca suelta</div>
+    <div class="barra-wrap"><div class="barra" style="width:82%;background:#d97706"></div></div>
+  </div>
+
+  <!-- ═══════════════ ENGRASE ═══════════════ -->
+  <div class="seccion-lbl">Engrase</div>
+
+  <div class="item ok">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-droplet-filled"></i>
+        <span class="item-nombre">Engrase manguetas ruedas delanteras</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-ok">Faltan 294 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=44" target="_blank">
+          <i class="ti ti-book"></i>Pág. 82
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 450 h · Próxima: h 6.850 · Grasa EBRO Universal Chasis</div>
+    <div class="barra-wrap"><div class="barra" style="width:32%;background:#16a34a"></div></div>
+  </div>
+
+  <div class="item ok">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-droplet-filled"></i>
+        <span class="item-nombre">Engrase biela freno estacionamiento + barras elevadoras + caja niveladora</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-ok">Faltan 44 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=44" target="_blank">
+          <i class="ti ti-book"></i>Pág. 82
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 300 h · Próxima: h 6.600 · Grasa EBRO Universal Chasis · Cubos ruedas delanteras: Grasa EBRO Multifuncional Agrícola (no sobrepasar)</div>
+    <div class="barra-wrap"><div class="barra" style="width:82%;background:#16a34a"></div></div>
+  </div>
+
+  <!-- ═══════════════ RUEDAS ═══════════════ -->
+  <div class="seccion-lbl">Ruedas y neumáticos</div>
+
+  <div class="item ok">
+    <div class="item-row">
+      <div class="item-izq">
+        <i class="ti ti-circles"></i>
+        <span class="item-nombre">Apriete tuercas de ruedas + presión de inflado</span>
+      </div>
+      <div class="item-der">
+        <span class="bdg bdg-ok">Faltan 294 h</span>
+        <a class="btn-manual" href="Tractor_EBRO__6090_.pdf#page=59" target="_blank">
+          <i class="ti ti-book"></i>Pág. 113
+        </a>
+      </div>
+    </div>
+    <div class="item-detalle">Cada 300 h · Próxima: h 6.850 · Delanteras: 18–24 kg·m · Traseras: 38–45 kg·m · Inflado: 2,8–3 bar del. / 1,4 bar tras.</div>
+    <div class="barra-wrap"><div class="barra" style="width:32%;background:#16a34a"></div></div>
+  </div>
+
+  <!-- ═══════════════ LEYENDA ═══════════════ -->
+  <div class="leyenda" style="margin-top:18px">
+    <strong>Referencia de color</strong>
+    <div class="leyenda-fila"><div class="dot" style="background:#dc2626"></div>Vencido — intervenir de inmediato</div>
+    <div class="leyenda-fila"><div class="dot" style="background:#d97706"></div>Próximo — revisar en las próximas 100 h</div>
+    <div class="leyenda-fila"><div class="dot" style="background:#16a34a"></div>Al día — siguiente intervención dentro de plazo</div>
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--gris-borde)">
+      Los botones <strong style="color:#1d4ed8">Pág. XX</strong> abren el procedimiento exacto en el Manual SP-286/2 (Motor Ibérica S.A., 2.ª ed. 1983).
+      Las operaciones sin botón azul están reservadas al <strong>Servicio Oficial EBRO</strong>.
+    </div>
+  </div>
+
+  <!-- ═══════════════ PIE ═══════════════ -->
+  <div class="pie">
+    Datos recogidos en PowerApps · Procesados con Power Automate · Fuente: Manual SP-286/2 (Pub. n.º SP-286/2, 2.ª ed., marzo 1983)
+  </div>
+
+</div>
+</body>
+</html>
